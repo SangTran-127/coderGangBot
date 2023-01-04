@@ -36,7 +36,8 @@ client.once(Events.ClientReady, (c) => {
   console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
-client.on("interactionCreate", async (interaction) => {
+client.on(Events.InteractionCreate, async interaction => {
+  console.log('sum ting right');
   if (!interaction.isChatInputCommand()) return;
 
   const command = interaction.client.commands.get(interaction.commandName);
