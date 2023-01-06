@@ -3,11 +3,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import * as dotenv from "dotenv";
+// import { checkWord } from "./utils/index.js";
 dotenv.config();
 // setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+// create path ../commands
+const commandsPath = path.join(__dirname, "commands");
+const eventsPath = path.join(__dirname, "events");
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -16,14 +19,16 @@ const client = new Client({
     GatewayIntentBits.GuildMessageReactions,
   ],
 });
-// load commands
-client.commands = new Collection();
-// create path ../commands
-const commandsPath = path.join(__dirname, "commands");
 // read path => Array of js command file
 const commandsFile = fs
   .readdirSync(commandsPath)
   .filter((file) => file.endsWith(".js"));
+const eventsFile = fs
+  .readdirSync(eventsPath)
+  .filter((file) => file.endsWith(".js"));
+// load commands
+client.commands = new Collection();
+
 // #TODO: REGISTING SLASH COMMANDS
 for (const file of commandsFile) {
   const filePath = path.join(commandsPath, file);
@@ -38,75 +43,13 @@ for (const file of commandsFile) {
     );
   }
 }
-
-client.once(Events.ClientReady, (c) => {
-  console.log(`Ready! Logged in as ${c.user.tag}`);
-});
-
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  const command = interaction.client.commands.get(interaction.commandName);
-  console.log("sum ting right");
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
+for (const file of eventsFile) {
+  const filePath = path.join(eventsPath, file);
+  const event = await import(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
   }
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({
-      content: "There was an error while executing this command!",
-      ephemeral: true,
-    });
-  }
-});
-client.on(Events.MessageCreate, (message) => {
-  try {
-    if (message.mentions.users.has(client.user.id)) {
-      message.reply("Hey!.");
-    }
-    const badWords = [
-      "dm",
-      "cc",
-      "dmm",
-      "dcm",
-      "dkm",
-      "con cac",
-      "loz",
-      "lồn",
-      "lol",
-      "con cặc",
-      "đụ má",
-      "đụ mẹ",
-      "đĩ",
-    ];
-    const greeting = [
-      "xin chào",
-      "hello",
-      "hi",
-      "hi mn",
-      "hello mn",
-      "hello mọi người",
-      "hi mọi người",
-    ];
-    const sadReactions = ["sad", "hic", "huhu", "hjc", "hix", "hjx", "buồn"];
-    const mess = message.content;
-    if (badWords.includes(mess.toLowerCase())) {
-      message.react("🤬");
-      message.reply("Chửi thề con căk");
-    }
-    if (greeting.includes(mess.toLowerCase())) {
-      message.react("😍");
-      message.reply("Chào bạn 🥳");
-    }
-    if (sadReactions.includes(mess.toLowerCase())) {
-      message.react("😢");
-      message.reply("Đừng bùn");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-});
+}
 client.login(process.env.TOKEN);

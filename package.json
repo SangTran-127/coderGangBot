@@ -10,5 +10,12 @@
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "module-alias": "^2.2.2"
+  },
+  "_moduleAliases": {
+    "@root": ".",
+    "@utils": "utils/index.js"
+  }
 }
