@@ -4,7 +4,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 let applicationId = process.env.APPLICATION_ID;
-let guildId = process.env.GUILD_ID;
+// get the context of the server
+// let guildId = process.env.GUILD_ID;
 const commands = [];
 // lay tat ca cac file trong folder commands
 const commandFiles = fs.readdirSync( "./commands" ).filter( ( file ) => file.endsWith( ".js" ) );
@@ -22,7 +23,7 @@ const rest = new REST( { version: "10" } ).setToken( process.env.TOKEN );
         console.log( `Started refreshing ${ commands.length } (/) commands.` );
         // xoa tat ca cac command trong server
         const data = await rest.put(
-            Routes.applicationGuildCommands( applicationId, guildId ),
+            Routes.applicationCommands( applicationId ),
             { body: commands } );
         console.log( `Successfully reloaded ${ data.length } application (/) commands.` );
     } catch ( error ) {

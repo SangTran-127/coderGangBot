@@ -37,11 +37,6 @@ const commandsFile = fs
 const eventsFile = fs
   .readdirSync( eventsPath )
   .filter( ( file ) => file.endsWith( ".js" ) );
-
-logs( client, {
-  debug: true,
-} )
-client.on( "debug", console.log );
 client.distube = new DisTube( client, {
   leaveOnEmpty: true,
   emptyCooldown: 30,
@@ -76,5 +71,10 @@ for ( const file of eventsFile ) {
     client.on( event.name, ( ...args ) => event.execute( ...args ) );
   }
 }
+client.on( 'ready', () => {
+  const Guilds = client.guilds.cache.map( guild => guild.id );
+  //set Guilds to context for use in other files
+  console.log( Guilds )
+} )
 
 client.login( process.env.TOKEN );
